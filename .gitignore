@@ -1,0 +1,4 @@
+*.swp
+*global.json
+*.class
+*.pyc
