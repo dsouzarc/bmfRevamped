@@ -1,32 +1,37 @@
-
-// Use Parse.Cloud.define to define as many cloud functions as you want.
-// For example:
-Parse.Cloud.define("hello", function(request, response) {
-  response.success("Hello Ryan!");
-});
-
+//Adds a restaurant
 Parse.Cloud.define("addRestaurant", function(request, response) {
 
+    //A Restaurant class
     var RestaurantObject = Parse.Object.extend("Restaurant");
     var newRestaurant = new RestaurantObject();
 
+    //A RestaurantItem class
     var MenuItem = Parse.Object.extend("RestaurantItem");
+
+    //To hold the menu items
     var menuArray = [];
 
+    //Short form for referring to the array of menu items
     var menu = request.params.restaurantMenu.menu;
+
+    //The name of the restaurant
     var restaurantName = request.params.restaurantName;
 
+    //Go through all the menu items
     for(var i = 0; i < menu.length; i++) {
+
+        //Create a new menu item
         var item = new MenuItem();
+
+        //Save the information
         item.save({restaurantOwner:restaurantName, itemName:menu[i].name, itemCost:menu[i].price, itemDescription:menu[i].description});
+
+        //Add it to the array
         menuArray.push(item);
     }
 
-
-    newRestaurant.save( {
-        restaurantName: request.params.restaurantName,
-        restaurantMenu: menuArray//menu
-        }, {
+    //Save the restaurant with the menu
+    newRestaurant.save({restaurantName: restaurantName, restaurantMenu: menuArray}, {
         success: function(item) {
             response.success();
             console.log("Successful save");
@@ -34,7 +39,7 @@ Parse.Cloud.define("addRestaurant", function(request, response) {
         error: function(item, error) {
             response.error(error);
         }
-        });
+    });
 });
 
 Parse.Cloud.define("addRestaurantItem", function(request, response) {
