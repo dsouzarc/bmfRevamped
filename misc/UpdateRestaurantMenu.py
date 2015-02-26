@@ -4,12 +4,13 @@ import config, sys;
 connection = httplib.HTTPSConnection('api.parse.com', 443);
 connection.connect();
 
-file = open(sys.argv[1]);
+restaurantName = raw_input("Restaurant name: ");
+file = open(raw_input("Text File: "));
 
 jsonData = json.load(file);
 
 connection.request('POST', '/1/functions/addRestaurant', json.dumps({
-    "restaurantName": "Testing", "restaurantMenu": jsonData}),
+    "restaurantName": restaurantName, "restaurantMenu": jsonData}),
     {
         "X-Parse-Application-Id": config.applicationId,
         "X-Parse-REST-API-Key": config.restAPIKey,
