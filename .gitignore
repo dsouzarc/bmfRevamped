@@ -2,3 +2,6 @@
 *global.json
 *.class
 *.pyc
+config.py
+*config.py
+config.py*
