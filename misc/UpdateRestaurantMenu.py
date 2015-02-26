@@ -8,8 +8,17 @@ file = open(sys.argv[1]);
 
 jsonData = json.load(file);
 
-#print(jsonData);
-print json.dumps(jsonData, indent=4, sort_keys=True);
+connection.request('POST', '/1/functions/addRestaurant', json.dumps({
+    "restaurantName": "Testing", "restaurantMenu": jsonData}),
+    {
+        "X-Parse-Application-Id": config.applicationId,
+        "X-Parse-REST-API-Key": config.restAPIKey,
+        "Content-Type": "application/json"
+        });
+
+result = json.loads(connection.getresponse().read());
+
+print result;
 
 
 
