@@ -1,3 +1,31 @@
+//Returns restaurants --> Will be modified to only return opened ones
+Parse.Cloud.define("getRestaurants", function(request, response) {
+
+    var query = new Parse.Query("Restaurant");
+
+    query.find( {
+        success: function(results) {
+            var openRestaurants = [];
+
+            for(var i = 0; i < results.length; i++) {
+
+                var restaurantObj = {
+                    "restaurantName":results[i].get("restaurantName")
+                };
+
+                openRestaurants.push(restaurantObj);
+            }
+
+            response.success(openRestaurants);
+        },
+        error: function() {
+            response.error("Error getting open restaurants");
+        }
+    });
+});
+
+
+//Returns a JSONArray of MenuItems for the entered restaurant
 Parse.Cloud.define("getMenuItems", function(request, response) {
 
     //Name of the retaurant
