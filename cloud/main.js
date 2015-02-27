@@ -1,3 +1,29 @@
+//Returns true/false if successful login
+Parse.Cloud.define("login", function(request, response) {
+
+    var username = request.params.username;
+    var password = request.params.password;
+
+    var query = new Parse.Query("BMFUser");
+    query.equalTo("emailAddress", username);
+
+    query.find( {
+        success: function(results) { 
+            for(var i = 0; i < results.length; i++) { 
+                if(results[i].get("encryptedPassword") === password) {
+                    response.success("YES");
+                    return;
+                }
+            }
+
+            response.success("NO");
+        },
+        error: function() {
+            response.error("Error finding restaurants matching name");
+        }
+    });
+});
+
 //Returns restaurants --> Will be modified to only return opened ones
 Parse.Cloud.define("getRestaurants", function(request, response) {
 
