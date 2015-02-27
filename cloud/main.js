@@ -1,3 +1,30 @@
+Parse.Cloud.define("getMenuItems", function(request, response) {
+
+    //Name of the retaurant
+    var restaurantName = request.params.restaurantName;
+
+    var query = new Parse.Query("RestaurantItem");
+
+    query.equalTo("restaurantOwner", restaurantName);
+
+    query.find( {
+        success: function(results) { 
+
+            var result = [];
+
+            for(var i = 0; i < results.length; i++) { 
+                result.push(results[i]);
+                console.log("Parsing: " + results[i].get("itemName"));
+            }
+
+            response.success(result);
+        }, 
+        error: function() {
+            response.error("Error finding restaurants matching name");
+        }
+    });
+});
+
 //Adds a restaurant
 Parse.Cloud.define("addRestaurant", function(request, response) {
 
