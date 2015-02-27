@@ -7,11 +7,12 @@ connection = httplib.HTTPSConnection('api.parse.com', 443);
 connection.connect();
 
 connection.request('POST', '/1/functions/getMenuItems', json.dumps({
-    "restaurantName":"Tortugas"}), {
+    "restaurantName":sys.argv[1]}), {
         "X-Parse-Application-Id":config.applicationId,
         "X-Parse-REST-API-Key":config.restAPIKey,
         "Content-Type": "application/json"
         });
 
 result = json.loads(connection.getresponse().read())
-print result
+
+print json.dumps(result, indent=4);
