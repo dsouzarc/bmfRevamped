@@ -13,7 +13,13 @@ Parse.Cloud.define("getMenuItems", function(request, response) {
             var result = [];
 
             for(var i = 0; i < results.length; i++) { 
-                result.push(results[i]);
+                var restaurantItem = {
+                    "restaurantName": results[i].get("restaurantOwner"),
+                    "itemName": results[i].get("itemName"),
+                    "price": results[i].get("itemCost"),
+                    "itemDescription": results[i].get("itemDescription")
+                };
+                result.push(restaurantItem);
                 console.log("Parsing: " + results[i].get("itemName"));
             }
 
