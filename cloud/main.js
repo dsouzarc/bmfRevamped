@@ -5,7 +5,7 @@ Parse.Cloud.define("login", function(request, response) {
     var password = request.params.password;
 
     var query = new Parse.Query("BMFUser");
-    query.equalTo("emailAddress", username);
+    query.equalTo("phoneNumber", username);
 
     query.find( {
         success: function(results) { 
@@ -24,6 +24,55 @@ Parse.Cloud.define("login", function(request, response) {
     });
 });
 
+function userExists(phoneNumber) {
+    var query = new Parse.Query("BMFUser");
+    query.equalTo("phoneNumber", phoneNumber);
+
+    query.find( {
+        success: function(results) {
+            if(results.length > 0) {
+                return false;
+            }
+            else {
+                return true;
+            }
+        }, 
+        error: function() {
+            return true;
+        }
+    });
+};
+
+//Create an account (verifies no duplicate accounts are made and all fields are satisfied)
+Parse.Cloud.define("createAccount", function(request, response) {
+
+    var name = request.params.name;
+    var phoneNumber = request.params.phoneNumber;
+    var password = request.params.password;
+    var emailAddress = request.params.emailAddress;
+
+    //Check to make sure there are no other usernames
+    if(userExists(phoneNumber)) {
+        response.success("EXISTS");
+    }
+
+    var BMFUser = Parse.Object.extend("BMFUser");
+    var newUser = new BMFUser();
+    newUser.save({ 
+        "name":name,
+        "emailAddress": emailAddress,
+        "phoneNumber": phoneNumber,
+        "encryptedPassword": password
+    }, {
+        success: function(item) {
+            response.success("CREATED");
+        },
+        error: function(item, error) {
+            response.error(error);
+        }
+    });
+});
+
 //Returns restaurants --> Will be modified to only return opened ones
 Parse.Cloud.define("getRestaurants", function(request, response) {
 
@@ -35,9 +84,7 @@ Parse.Cloud.define("getRestaurants", function(request, response) {
 
             for(var i = 0; i < results.length; i++) {
 
-                var restaurantObj = {
-                    "restaurantName":results[i].get("restaurantName")
-                };
+                var restaurantObj = results[i].get("restaurantName"); //{}
 
                 openRestaurants.push(restaurantObj);
             }
