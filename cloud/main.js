@@ -1,3 +1,45 @@
+Parse.Cloud.define("placeOrder", function(request, response) {
+
+    var userObjectID = request.params.userobjectid;
+    var restaurantName = request.params.restaurantname;
+    var orderItems = request.params.orderitems;
+    var deliveryAddress = request.params.deliveryaddress;
+    var timeToBeDeliveredAt = request.params.timetodeliverat;
+
+    var user = getUser(userObjectID);
+
+    if(user != null) {
+        console.log("YES");
+        response.success(user.name);
+        return;
+    }
+    else {
+        console.log("NO");
+        response.error("NO");
+    }
+});
+
+function getUser(userObjectId) {
+
+    var query = new Parse.Query("User");
+    query.equalTo("objectId", userObjectId);
+
+    query.find({ 
+        success: function(results) {
+            if(results.length > 0) {
+                return results[0];
+            }
+            else {
+                return null;
+            }
+        },
+        error: function() {
+            return null;
+        }
+    });
+}
+
+
 //Returns true/false if successful login
 Parse.Cloud.define("login", function(request, response) {
 
