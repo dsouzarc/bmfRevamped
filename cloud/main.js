@@ -23,36 +23,34 @@ Parse.Cloud.define("placeOrder", function(request, response) {
     var NewOrderClass = Parse.Object.extend("Order");
     var newOrder = new NewOrderClass();
 
-    var user = request.user; 
-
-    newOrder.orderedBy = user;
-
     var restaurantQuery = new Parse.Query("Restaurant");
-    restaurantQuery.equalTo("restaurantName", "Tortugas");
+    restaurantQuery.equalTo("restaurantName", request.params.restaurantName);
 
     restaurantQuery.first({
         success: function(restaurant) {
-
-            
-            newOrder.orderedBy = request.user;
-            console.log("Added orderedBy");
-
             newOrder.save({
                 success: function(success) { 
+                    newOrder.set("orderedBy", request.user);
+                    newOrder.set("restaurantName", request.params.restaurantName);        
+                    newOrder.set("ordererName", request.params.ordererName);
+                    newOrder.set("deliveryAddress", request.params.deliveryAddress);
+                    newOrder.set("orderStatus", 0);
+                    newOrder.set("timeToBeDeliveredAt", request.params.timeToDeliverAt);
+                    newOrder.set("chosenItems", request.params.chosenItems);
                     newOrder.relation("restaurantFrom").add(restaurant);
-                    newOrder.relation("restaurant").add(restaurant);
+
                     newOrder.save();
-                    console.log("Success");
+                    response.success("Success!");
                 },
                 error: function(error) {
                     console.log(error);
-                    response.error("Error");
+                    response.error("Error making new order");
                 }
             });
 
         }, error: function(error) {
-            console.log("Error");
-            response.error("Error");
+            console.log(error);
+            response.error("Error making new order");
         }
     });
 });
