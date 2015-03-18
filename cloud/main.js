@@ -18,47 +18,41 @@ function getUser(userObjectId) {
     });
 };
 
-function getRestaurant(restaurantId) {
-
-    var restQuery = new Parse.Query("Restaurant");
-    restQuery.equalTo("restaurantName", "Tortugas");
-    //restQuery.equalTo("objectId", restaurantId);
-
-    return restQuery.first({
-        success: function(restaurant) {
-            restaurant.fetch();
-            return restaurant;
-        },
-        error: function(error) {
-            return error;
-        }
-    });
-};
-
 Parse.Cloud.define("placeOrder", function(request, response) {
-
-    var userObjectID = request.params.userobjectid;
-    var restaurantObjectID = request.params.restaurantObjectId;
-    var orderItems = request.params.orderitems;
-    var deliveryAddressGeoPoint = request.params.deliveryaddress;
-    var timeToBeDeliveredAtDate = request.params.timetodeliverat;
-
-    var user = request.user; //getUser(userObjectID);
-    var restaurant = getRestaurant(restaurantObjectID);
 
     var NewOrderClass = Parse.Object.extend("Order");
     var newOrder = new NewOrderClass();
 
-    newOrder.save( {
-        //restaurant: restaurant,
-        orderedBy: user
-    }, {
-        success: function(newOrder) {
-            response.success("Order placed");
-        }, 
-        error: function(newOrder, error) {
-            response.error(error + "error");
-            console.log(error);
+    var user = request.user; 
+
+    newOrder.orderedBy = user;
+
+    var restaurantQuery = new Parse.Query("Restaurant");
+    restaurantQuery.equalTo("restaurantName", "Tortugas");
+
+    restaurantQuery.first({
+        success: function(restaurant) {
+
+            
+            newOrder.orderedBy = request.user;
+            console.log("Added orderedBy");
+
+            newOrder.save({
+                success: function(success) { 
+                    newOrder.relation("restaurantFrom").add(restaurant);
+                    newOrder.relation("restaurant").add(restaurant);
+                    newOrder.save();
+                    console.log("Success");
+                },
+                error: function(error) {
+                    console.log(error);
+                    response.error("Error");
+                }
+            });
+
+        }, error: function(error) {
+            console.log("Error");
+            response.error("Error");
         }
     });
 });
@@ -74,7 +68,7 @@ Parse.Cloud.define("getRestaurants", function(request, response) {
 
             for(var i = 0; i < results.length; i++) {
 
-                var restaurantObj = results[i].get("restaurantName"); //{}
+                var restaurantObj = results[i];//.get("restaurantName"); //{}
 
                 openRestaurants.push(restaurantObj);
             }
