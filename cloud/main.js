@@ -1,43 +1,91 @@
+function getUser(userObjectId) {
+    Parse.Cloud.useMasterKey();
+
+    var userQuery = new Parse.Query(Parse.User);
+    userQuery.equalTo("phoneNumber", "6099154930");
+
+    return userQuery.first({
+        success: function(userRetrieved) {
+            console.log("We have");
+            userRetrieved.fetch();
+            console.log("Got: " + userRetrieved.name);
+            return userRetrieved;
+        }
+        ,
+        error: function(error) {
+            return error;
+        }
+    });
+};
+
+function getRestaurant(restaurantId) {
+
+    var restQuery = new Parse.Query("Restaurant");
+    restQuery.equalTo("restaurantName", "Tortugas");
+    //restQuery.equalTo("objectId", restaurantId);
+
+    return restQuery.first({
+        success: function(restaurant) {
+            restaurant.fetch();
+            return restaurant;
+        },
+        error: function(error) {
+            return error;
+        }
+    });
+};
+
 Parse.Cloud.define("placeOrder", function(request, response) {
 
     var userObjectID = request.params.userobjectid;
-    var restaurantName = request.params.restaurantname;
+    var restaurantObjectID = request.params.restaurantObjectId;
     var orderItems = request.params.orderitems;
-    var deliveryAddress = request.params.deliveryaddress;
-    var timeToBeDeliveredAt = request.params.timetodeliverat;
+    var deliveryAddressGeoPoint = request.params.deliveryaddress;
+    var timeToBeDeliveredAtDate = request.params.timetodeliverat;
 
-    var user = getUser(userObjectID);
+    var user = request.user; //getUser(userObjectID);
+    var restaurant = getRestaurant(restaurantObjectID);
 
-    if(user != null) {
-        console.log("YES");
-        response.success(user.name);
-        return;
-    }
-    else {
-        console.log("NO");
-        response.error("NO");
-    }
-});
+    var NewOrderClass = Parse.Object.extend("Order");
+    var newOrder = new NewOrderClass();
 
-function getUser(userObjectId) {
-
-    var query = new Parse.Query("User");
-    query.equalTo("objectId", userObjectId);
-
-    query.find({ 
-        success: function(results) {
-            if(results.length > 0) {
-                return results[0];
-            }
-            else {
-                return null;
-            }
-        },
-        error: function() {
-            return null;
+    newOrder.save( {
+        //restaurant: restaurant,
+        orderedBy: user
+    }, {
+        success: function(newOrder) {
+            response.success("Order placed");
+        }, 
+        error: function(newOrder, error) {
+            response.error(error + "error");
+            console.log(error);
         }
     });
-}
+});
+
+//Returns restaurants --> Will be modified to only return opened ones
+Parse.Cloud.define("getRestaurants", function(request, response) {
+
+    var query = new Parse.Query("Restaurant");
+
+    query.find( {
+        success: function(results) {
+            var openRestaurants = [];
+
+            for(var i = 0; i < results.length; i++) {
+
+                var restaurantObj = results[i].get("restaurantName"); //{}
+
+                openRestaurants.push(restaurantObj);
+            }
+
+            response.success(openRestaurants);
+        },
+        error: function() {
+            response.error("Error getting open restaurants");
+        }
+    });
+});
 
 
 //Returns true/false if successful login
@@ -111,30 +159,6 @@ Parse.Cloud.define("createAccount", function(request, response) {
         },
         error: function(item, error) {
             response.error(error);
-        }
-    });
-});
-
-//Returns restaurants --> Will be modified to only return opened ones
-Parse.Cloud.define("getRestaurants", function(request, response) {
-
-    var query = new Parse.Query("Restaurant");
-
-    query.find( {
-        success: function(results) {
-            var openRestaurants = [];
-
-            for(var i = 0; i < results.length; i++) {
-
-                var restaurantObj = results[i].get("restaurantName"); //{}
-
-                openRestaurants.push(restaurantObj);
-            }
-
-            response.success(openRestaurants);
-        },
-        error: function() {
-            response.error("Error getting open restaurants");
         }
     });
 });
