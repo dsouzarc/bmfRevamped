@@ -1,22 +1,22 @@
-function getUser(userObjectId) {
-    Parse.Cloud.useMasterKey();
+Parse.Cloud.define("getUsersLiveOrders", function(request, response) {
 
-    var userQuery = new Parse.Query(Parse.User);
-    userQuery.equalTo("phoneNumber", "6099154930");
+    var ordersQuery = new Parse.Query("Order");
+    ordersQuery.equalTo("orderedBy", request.user);
 
-    return userQuery.first({
-        success: function(userRetrieved) {
-            console.log("We have");
-            userRetrieved.fetch();
-            console.log("Got: " + userRetrieved.name);
-            return userRetrieved;
-        }
-        ,
-        error: function(error) {
-            return error;
+    ordersQuery.find({
+        success: function(results) {
+
+            var allOrders = [];
+
+            for(var i = 0; i < results.length; i++) {
+                allOrders.push(results[i]);
+            }
+            response.success(allOrders);
+        }, error: function(error) {
+            response.error(error);
         }
     });
-};
+});
 
 Parse.Cloud.define("placeOrder", function(request, response) {
 
@@ -34,6 +34,7 @@ Parse.Cloud.define("placeOrder", function(request, response) {
                     newOrder.set("restaurantName", request.params.restaurantName);        
                     newOrder.set("ordererName", request.params.ordererName);
                     newOrder.set("deliveryAddress", request.params.deliveryAddress);
+                    newOrder.set("deliveryAddressString", request.params.deliveryAddressString);
                     newOrder.set("orderStatus", 0);
                     newOrder.set("timeToBeDeliveredAt", request.params.timeToDeliverAt);
                     newOrder.set("chosenItems", request.params.chosenItems);
