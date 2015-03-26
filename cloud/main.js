@@ -1,3 +1,32 @@
+Parse.Cloud.define("getUnclaimedOrders", function(request, response) {
+
+    var query = (new Parse.Query("Order"));
+    query.equalTo("orderStatus", "0");
+
+    query.find({
+        success: function(results) {
+            response.success(results);
+        }, error: function(error) {
+            response.error(error);
+        }
+    });
+});
+
+Parse.Cloud.define("userHasDriverRole", function(request, response) {
+
+    var query = (new Parse.Query(Parse.Role));
+    query.equalTo("name", "Drivers");
+    query.equalTo("users", Parse.User.current());
+    query.first().then(function(hasDriverRole) {
+        if(hasDriverRole) {
+            response.success("YES");
+        }
+        else {
+            response.success("NO");
+        }
+    });
+});
+
 Parse.Cloud.define("getUsersLiveOrders", function(request, response) {
 
     var ordersQuery = new Parse.Query("Order");
@@ -5,13 +34,7 @@ Parse.Cloud.define("getUsersLiveOrders", function(request, response) {
 
     ordersQuery.find({
         success: function(results) {
-
-            var allOrders = [];
-
-            for(var i = 0; i < results.length; i++) {
-                allOrders.push(results[i]);
-            }
-            response.success(allOrders);
+            response.success(results);
         }, error: function(error) {
             response.error(error);
         }
