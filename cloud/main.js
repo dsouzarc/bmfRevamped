@@ -79,6 +79,26 @@ Parse.Cloud.define("placeOrder", function(request, response) {
     });
 });
 
+//TODO: Change to only when order is placed
+Parse.Cloud.afterSave("Order", function(request) {
+    var pushQuery = new Parse.Query(Parse.Installation);
+    pushQuery.equalTo('deviceType', 'ios');
+
+    Parse.Push.send({
+        where: pushQuery,
+        data: {
+            alert: "Yes!"
+        }
+    }, {
+        success: function() {
+            console.log("YES!");
+        }, 
+        error: function(error) {
+            console.log(error);
+        }
+    });
+});
+
 //Returns restaurants --> Will be modified to only return opened ones
 Parse.Cloud.define("getRestaurants", function(request, response) {
 
