@@ -65,8 +65,22 @@ Parse.Cloud.define("placeOrder", function(request, response) {
 
                     newOrder.save();
                     response.success("Success!");
-                },
-                error: function(error) {
+                    
+                    Parse.Push.send({
+                        channels: ["Driver"],
+                        data: {
+                            alert: "New Order For " + request.params.restaurantName
+                        }
+                    }, {
+                            success: function() {
+                            },
+                            error: function() {
+                                console.log(error);
+                            }
+                        }
+                    );
+                    
+                }, error: function(error) {
                     console.log(error);
                     response.error("Error making new order");
                 }
@@ -81,18 +95,6 @@ Parse.Cloud.define("placeOrder", function(request, response) {
 
 //TODO: Change to only when order is placed
 Parse.Cloud.afterSave("Order", function(request) {
-    Parse.Push.send({
-        channels: ["Driver"],
-        data: {
-            alert: "New Order!"
-        }
-    }, {
-        success: function() {
-        }, 
-        error: function(error) {
-            console.log(error);
-        }
-    });
 });
 
 //Returns restaurants --> Will be modified to only return opened ones
