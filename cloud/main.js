@@ -81,17 +81,13 @@ Parse.Cloud.define("placeOrder", function(request, response) {
 
 //TODO: Change to only when order is placed
 Parse.Cloud.afterSave("Order", function(request) {
-    var pushQuery = new Parse.Query(Parse.Installation);
-    pushQuery.equalTo('deviceType', 'ios');
-
     Parse.Push.send({
-        where: pushQuery,
+        channels: ["Driver"],
         data: {
-            alert: "Yes!"
+            alert: "New Order!"
         }
     }, {
         success: function() {
-            console.log("YES!");
         }, 
         error: function(error) {
             console.log(error);
