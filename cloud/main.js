@@ -34,7 +34,28 @@ Parse.Cloud.define("getUsersLiveOrders", function(request, response) {
 
     ordersQuery.find({
         success: function(results) {
-            response.success(results);
+
+            var orders = [];
+
+            for(var i = 0; i < results.length; i++) {
+
+                var order = {
+                    "orderId": results[i].objectId,
+                    "createdAt": results[i].createdAt,
+                    "restaurantName": results[i].get("restaurantName"),
+                    "ordererName": results[i].ordererName,
+                    "deliveryAddressString": results[i].deliveryAddressString,
+                    "deliveryAddress": results[i].deliveryAddress,
+                    "orderStatus": results[i].orderStatus,
+                    "timeToDeliverAt": results[i].timeToBeDeliveredAt,
+                    "estimatedDeliveryTime": results[i].estimatedDeliveryTime,
+                    "chosenItems": results[i].chosenItems
+                };
+
+                orders.push(order);
+            }
+
+            response.success(orders);
         }, error: function(error) {
             response.error(error);
         }
