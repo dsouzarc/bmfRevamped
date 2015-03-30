@@ -1,12 +1,36 @@
+function getDetailedOrder(parseObject) {
+    var order = {
+        "orderId": parseObject.objectId,
+        "createdAt": parseObject.createdAt,
+        "restaurantName": parseObject.get("restaurantName"),
+        "ordererName": parseObject.get("ordererName"),
+        "deliveryAddressString": parseObject.get("deliveryAddressString"),
+        "deliveryAddress": parseObject.get("deliveryAddress"),
+        "orderStatus": parseObject.get("orderStatus"),
+        "timeToDeliverAt": parseObject.get("timeToBeDeliveredAt"),
+        "estimatedDeliveryTime": parseObject.get("estimatedDeliveryTime"),
+        "chosenItems": parseObject.get("chosenItems")
+    };
+
+    return order;
+}
+
 Parse.Cloud.define("getUnclaimedOrders", function(request, response) {
 
-    var query = (new Parse.Query("Order"));
-    query.equalTo("orderStatus", "0");
+    var query = new Parse.Query("Order");
+    query.equalTo("orderStatus", 0);
 
     query.find({
         success: function(results) {
-            response.success(results);
+            var orders = [];
+            
+            for(var i = 0; i < results.length; i++) {
+                orders.push(getDetailedOrder(results[i]));
+            }
+            
+            response.success(orders);
         }, error: function(error) {
+            console.log("ERROR GETTING UNCLAIMED ORDERS");
             response.error(error);
         }
     });
@@ -38,21 +62,7 @@ Parse.Cloud.define("getUsersLiveOrders", function(request, response) {
             var orders = [];
 
             for(var i = 0; i < results.length; i++) {
-
-                var order = {
-                    "orderId": results[i].objectId,
-                    "createdAt": results[i].createdAt,
-                    "restaurantName": results[i].get("restaurantName"),
-                    "ordererName": results[i].ordererName,
-                    "deliveryAddressString": results[i].deliveryAddressString,
-                    "deliveryAddress": results[i].deliveryAddress,
-                    "orderStatus": results[i].orderStatus,
-                    "timeToDeliverAt": results[i].timeToBeDeliveredAt,
-                    "estimatedDeliveryTime": results[i].estimatedDeliveryTime,
-                    "chosenItems": results[i].chosenItems
-                };
-
-                orders.push(order);
+                orders.push(getDetailedOrder(results[i]));
             }
 
             response.success(orders);
@@ -112,10 +122,6 @@ Parse.Cloud.define("placeOrder", function(request, response) {
             response.error("Error making new order");
         }
     });
-});
-
-//TODO: Change to only when order is placed
-Parse.Cloud.afterSave("Order", function(request) {
 });
 
 //Returns restaurants --> Will be modified to only return opened ones
