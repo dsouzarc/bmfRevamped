@@ -9,6 +9,7 @@ function getDetailedOrder(parseObject) {
         "orderStatus": parseObject.get("orderStatus"),
         "timeToDeliverAt": parseObject.get("timeToBeDeliveredAt"),
         "estimatedDeliveryTime": parseObject.get("estimatedDeliveryTime"),
+        "orderCost": parseObject.get("orderCost"),
         "chosenItems": parseObject.get("chosenItems")
     };
 
