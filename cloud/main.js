@@ -92,13 +92,14 @@ Parse.Cloud.define("placeOrder", function(request, response) {
                     newOrder.set("orderStatus", 0);
                     newOrder.set("timeToBeDeliveredAt", request.params.timeToDeliverAt);
                     newOrder.set("chosenItems", request.params.chosenItems);
+                    newOrder.set("orderCost", request.params.orderCost);
                     newOrder.relation("restaurantFrom").add(restaurant);
 
                     newOrder.save();
                     response.success("Success!");
                     
                     Parse.Push.send({
-                        channels: ["Driver"],
+                        channels: ["Drivers"],
                         data: {
                             alert: "New Order For " + request.params.restaurantName
                         }
