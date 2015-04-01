@@ -10,7 +10,7 @@ function getDetailedOrder(parseObject) {
         "timeToDeliverAt": parseObject.get("timeToBeDeliveredAt"),
         "estimatedDeliveryTime": parseObject.get("estimatedDeliveryTime"),
         "orderCost": parseObject.get("orderCost"),
-        "restaurantGeoPoint": parseObject.get("geoPoint"),
+        "restaurantLocation": parseObject.get("restaurantLocation"),
         "chosenItems": parseObject.get("chosenItems")
     };
 
@@ -84,11 +84,13 @@ Parse.Cloud.define("placeOrder", function(request, response) {
 
     restaurantQuery.first({
         success: function(restaurant) {
+
+            var restaurantLocation = restaurant.get("restaurantLocation");
             newOrder.save({
                 success: function(success) { 
                     newOrder.set("orderedBy", request.user);
                     newOrder.set("restaurantName", request.params.restaurantName);        
-                    newOrder.set("restaurantGeoPoint", restaurant.locationGeoPoint);
+                    newOrder.set("restaurantLocation", restaurantLocation);
                     newOrder.set("ordererName", request.params.ordererName);
                     newOrder.set("deliveryAddress", request.params.deliveryAddress);
                     newOrder.set("deliveryAddressString", request.params.deliveryAddressString);
