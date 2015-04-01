@@ -57,6 +57,26 @@ Parse.Cloud.define("claimOrder", function(request, response) {
                 order.relation("driver").add(driver);
                 order.save();
                 response.success("CLAIMED");
+
+                var orderer = new Parse.User();
+                orderer.id = order.get("orderedBy").id;
+
+                var pushQuery = new Parse.Query(Parse.Installation);
+                pushQuery.equalTo('channels', order.get("orderedBy").id);
+
+                Parse.Push.send({
+                    where: pushQuery,
+                    data: {
+                        alert: "Your order was claimed by " + driver.get("name")
+                    }
+                }, {
+                    success: function() { 
+                    
+                    },
+                    error: function() {
+                        console.log("Error sending push");
+                    }
+                });
             }
             else {
                 response.success("ALREADY CLAIMED");
