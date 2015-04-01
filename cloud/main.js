@@ -1,6 +1,7 @@
 function getDetailedOrder(parseObject) {
+    console.log("HERE: " + parseObject.objectId);
     var order = {
-        "orderId": parseObject.objectId,
+        "orderId": parseObject.id,
         "createdAt": parseObject.createdAt,
         "restaurantName": parseObject.get("restaurantName"),
         "ordererName": parseObject.get("ordererName"),
@@ -37,6 +38,35 @@ Parse.Cloud.define("getUnclaimedOrders", function(request, response) {
         }
     });
 });
+
+Parse.Cloud.define("claimOrder", function(request, response) {
+
+    var estimatedDeliveryTime = request.params.estimatedDeliveryTime;
+    var orderId = request.params.orderId;
+    var driver = Parse.User.current();
+
+    var query = (new Parse.Query("Order"));
+    query.equalTo("objectId", orderId);
+
+    query.find({
+        success: function(result) {
+            var order = result[0];
+            if(order.get("orderStatus") == 0) {
+                order.set("orderStatus", 1);
+                order.set("estimatedDeliveryTime", estimatedDeliveryTime);
+                order.relation("driver").add(driver);
+                order.save();
+                response.success("CLAIMED");
+            }
+            else {
+                response.success("ALREADY CLAIMED");
+            }
+        }, error: function(error) {
+            response.error(error);
+        }
+    });
+});
+
 
 Parse.Cloud.define("userHasDriverRole", function(request, response) {
 
