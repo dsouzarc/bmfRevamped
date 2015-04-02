@@ -12,6 +12,7 @@ function getDetailedOrder(parseObject) {
         "estimatedDeliveryTime": parseObject.get("estimatedDeliveryTime"),
         "orderCost": parseObject.get("orderCost"),
         "restaurantLocation": parseObject.get("restaurantLocation"),
+        "additionalDetails": parseObject.get("additionalDetails"),
         "chosenItems": parseObject.get("chosenItems")
     };
 
@@ -148,6 +149,7 @@ Parse.Cloud.define("placeOrder", function(request, response) {
                     newOrder.set("timeToBeDeliveredAt", request.params.timeToDeliverAt);
                     newOrder.set("chosenItems", request.params.chosenItems);
                     newOrder.set("orderCost", request.params.orderCost);
+                    newOrder.set("additionalDetails", request.params.additionalDetails);
                     newOrder.relation("restaurantFrom").add(restaurant);
 
                     newOrder.save();
