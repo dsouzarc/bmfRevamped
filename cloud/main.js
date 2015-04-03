@@ -1,24 +1,4 @@
-function getDetailedOrder(parseObject) {
-    console.log("HERE: " + parseObject.objectId);
-    var order = {
-        "orderId": parseObject.id,
-        "createdAt": parseObject.createdAt,
-        "restaurantName": parseObject.get("restaurantName"),
-        "ordererName": parseObject.get("ordererName"),
-        "deliveryAddressString": parseObject.get("deliveryAddressString"),
-        "deliveryAddress": parseObject.get("deliveryAddress"),
-        "orderStatus": parseObject.get("orderStatus"),
-        "timeToDeliverAt": parseObject.get("timeToBeDeliveredAt"),
-        "estimatedDeliveryTime": parseObject.get("estimatedDeliveryTime"),
-        "orderCost": parseObject.get("orderCost"),
-        "restaurantLocation": parseObject.get("restaurantLocation"),
-        "additionalDetails": parseObject.get("additionalDetails"),
-        "chosenItems": parseObject.get("chosenItems")
-    };
-
-    return order;
-}
-
+//Returns all unclaimed orders
 Parse.Cloud.define("getUnclaimedOrders", function(request, response) {
 
     var query = new Parse.Query("Order");
@@ -26,13 +6,7 @@ Parse.Cloud.define("getUnclaimedOrders", function(request, response) {
 
     query.find({
         success: function(results) {
-            var orders = [];
-            
-            for(var i = 0; i < results.length; i++) {
-                orders.push(getDetailedOrder(results[i]));
-            }
-            
-            response.success(orders);
+            response.success(results);
         }, error: function(error) {
             console.log("ERROR GETTING UNCLAIMED ORDERS");
             response.error(error);
@@ -40,11 +14,16 @@ Parse.Cloud.define("getUnclaimedOrders", function(request, response) {
     });
 });
 
+//Claims an order
 Parse.Cloud.define("claimOrder", function(request, response) {
 
     var estimatedDeliveryTime = request.params.estimatedDeliveryTime;
     var orderId = request.params.orderId;
     var driver = Parse.User.current();
+
+    var driverName = request.params.driverName;
+    var driverLocation = request.params.driverLocation;
+    var driverPhoneNumber = request.params.driverPhoneNumber;
 
     var query = (new Parse.Query("Order"));
     query.equalTo("objectId", orderId);
@@ -54,6 +33,11 @@ Parse.Cloud.define("claimOrder", function(request, response) {
             var order = result[0];
             if(order.get("orderStatus") == 0) {
                 order.set("orderStatus", 1);
+                order.save();
+
+                order.set("driverName", driverName);
+                order.set("driverLocation", driverLocation);
+                order.set("driverPhoneNumber", driverPhoneNumber);
                 order.set("estimatedDeliveryTime", estimatedDeliveryTime);
                 order.relation("driver").add(driver);
                 order.save();
@@ -111,14 +95,7 @@ Parse.Cloud.define("getUsersLiveOrders", function(request, response) {
 
     ordersQuery.find({
         success: function(results) {
-
-            var orders = [];
-
-            for(var i = 0; i < results.length; i++) {
-                orders.push(getDetailedOrder(results[i]));
-            }
-
-            response.success(orders);
+            response.success(results);
         }, error: function(error) {
             response.error(error);
         }
@@ -143,6 +120,7 @@ Parse.Cloud.define("placeOrder", function(request, response) {
                     newOrder.set("restaurantName", request.params.restaurantName);        
                     newOrder.set("restaurantLocation", restaurantLocation);
                     newOrder.set("ordererName", request.params.ordererName);
+                    newOrder.set("ordererPhoneNumber", request.params.ordererPhoneNumber);
                     newOrder.set("deliveryAddress", request.params.deliveryAddress);
                     newOrder.set("deliveryAddressString", request.params.deliveryAddressString);
                     newOrder.set("orderStatus", 0);
