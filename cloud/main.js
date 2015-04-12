@@ -1,3 +1,24 @@
+Parse.Cloud.define("getDriverLocation", function(request, response) {
+
+    var orderID = request.params.orderID;
+
+    var query = Parse.Query("Order");
+    query.equalTo("objectId", orderID);
+
+    query.find({
+        success: function(order) {
+
+            //TODO: DRIVER IS NOW A POINTER
+            //UPDATE STATUS AS WELL
+        }, error: function(error) {
+            response.error(error);
+        }
+    });
+});
+
+
+
+
 //Returns all unclaimed orders
 Parse.Cloud.define("getUnclaimedOrders", function(request, response) {
 
