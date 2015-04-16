@@ -27,7 +27,24 @@ Parse.Cloud.define("getUnclaimedOrders", function(request, response) {
 
     query.find({
         success: function(results) {
-            response.success(results);
+            var orders = [];
+
+            for(var i = 0; i < results.length; i++) {
+                var order = {
+                    "orderID": results[i].objectId,
+                    "restaurantName": results[i].get("restaurantName"),
+                    "deliveryAddressString": results[i].get("deliveryAddressString"),
+                    "timeToBeDeliveredAt": results[i].get("timeToBeDeliveredAt"),
+                    "deliveryAddress": results[i].get("deliveryAddress"),
+                    "orderCost": results[i].get("orderCost"),
+                    "restaurantGeoPoint": results[i].get("restaurantLocation")
+
+                };
+                orders.push(order);
+            }
+
+            response.success(orders);
+
         }, error: function(error) {
             console.log("ERROR GETTING UNCLAIMED ORDERS");
             response.error(error);
