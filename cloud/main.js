@@ -16,9 +16,6 @@ Parse.Cloud.define("getDriverLocation", function(request, response) {
     });
 });
 
-
-
-
 //Returns all unclaimed orders
 Parse.Cloud.define("getUnclaimedOrders", function(request, response) {
 
@@ -31,7 +28,7 @@ Parse.Cloud.define("getUnclaimedOrders", function(request, response) {
 
             for(var i = 0; i < results.length; i++) {
                 var order = {
-                    "orderID": results[i].objectId,
+                    "orderID": results[i].id,
                     "restaurantName": results[i].get("restaurantName"),
                     "deliveryAddressString": results[i].get("deliveryAddressString"),
                     "timeToBeDeliveredAt": results[i].get("timeToBeDeliveredAt"),
@@ -52,6 +49,21 @@ Parse.Cloud.define("getUnclaimedOrders", function(request, response) {
     });
 });
 
+Parse.Cloud.define("setDriverLocation", function(request, response) {
+
+    var driverID = Parse.User.current().id;
+
+    var query = new Parse.Query(Parse.User);
+    query.equalTo('objectId', driverID);
+
+    query.first().then(function(driver) {    
+        driver.set("currentLocation", request.params.currentLocation);
+        driver.save();
+
+        response.success("YES");
+    });
+});
+
 //Claims an order
 Parse.Cloud.define("claimOrder", function(request, response) {
 
@@ -66,18 +78,19 @@ Parse.Cloud.define("claimOrder", function(request, response) {
     var query = (new Parse.Query("Order"));
     query.equalTo("objectId", orderId);
 
+    console.log("USER: " + Parse.User.current());
+
     query.find({
         success: function(result) {
             var order = result[0];
             if(order.get("orderStatus") == 0) {
                 order.set("orderStatus", 1);
-                order.save();
+                order.set("driver", {"__type":"Pointer", "className":"_User", "objectId":Parse.User.current().id});
 
-                order.set("driverName", driverName);
-                order.set("driverLocation", driverLocation);
-                order.set("driverPhoneNumber", driverPhoneNumber);
+                order.set("driverName", driver.get("name"));
+                order.set("driverLocation", request.params.driverLocation);
+                order.set("driverPhoneNumber", driver.get("phoneNumber"));
                 order.set("estimatedDeliveryTime", estimatedDeliveryTime);
-                order.relation("driver").add(driver);
                 order.save();
                 response.success("CLAIMED");
 
