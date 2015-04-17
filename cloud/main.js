@@ -64,6 +64,46 @@ Parse.Cloud.define("setDriverLocation", function(request, response) {
     });
 });
 
+Parse.Cloud.define("getDriversOrders", function(request, response) {
+
+    var query = new Parse.Query("Order");
+    query.equalTo('driver', Parse.User.current());
+
+    query.find({
+        success: function(results) {
+
+            var orders = [];
+
+            for(var i = 0; i < results.length; i++) {
+
+                var order = {
+                    "orderID": results[i].id,
+                    "deliveryAddress": results[i].get("deliveryAddress"),
+                    "deliveryAddressString": results[i].get("deliveryAddressString"),
+                    "estimatedDeliveryTime": results[i].get("estimatedDeliveryTime"),
+                    "orderCost": results[i].get("orderCost"),
+                    "orderStatus": results[i].get("orderStatus"),
+                    "ordererName": results[i].get("ordererName"),
+                    "ordererPhoneNumber": results[i].get("ordererPhoneNumber"),
+                    "restaurantLocation": results[i].get("restaurantLocation"),
+                    "restaurantName": results[i].get("restaurantName"),
+                    "timeToBeDeliveredAt": results[i].get("timeToBeDeliveredAt"),
+                    "additionalDetails": results[i].get("additionalDetails"),
+                    "chosenItems": results[i].get("chosenItems")
+                };
+
+                orders.push(order);
+            }
+
+            response.success(orders);
+
+        }, error: function(error) {
+            response.error(error);
+        }
+    });
+});
+
+
 //Claims an order
 Parse.Cloud.define("claimOrder", function(request, response) {
 
