@@ -7,9 +7,20 @@ Parse.Cloud.define("getDriverLocation", function(request, response) {
 
     query.find({
         success: function(order) {
+            var driver = order.get("driver");
+            var driverLocation = driver.get("currentLocation");
 
-            //TODO: DRIVER IS NOW A POINTER
-            //UPDATE STATUS AS WELL
+            var restaurantLocation = order.get("restaurantLocation");
+            var deliveryLocation = order.get("deliveryAddress");
+
+            var results = {
+                "driverLocation": driverLocation,
+                "restaurantLocation": restaurantLocation,
+                "deliveryLocation": deliveryLocation
+            };
+
+            response.success(results);
+
         }, error: function(error) {
             response.error(error);
         }
