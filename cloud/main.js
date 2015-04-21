@@ -2,24 +2,27 @@ Parse.Cloud.define("getDriverLocation", function(request, response) {
 
     var orderID = request.params.orderID;
 
-    var query = Parse.Query("Order");
+    var query = new Parse.Query("Order");
     query.equalTo("objectId", orderID);
 
-    query.find({
+
+    query.first({
         success: function(order) {
-            var driver = order.get("driver");
-            var driverLocation = driver.get("currentLocation");
+            order.get("driver").fetch().then(function(driver) {
 
-            var restaurantLocation = order.get("restaurantLocation");
-            var deliveryLocation = order.get("deliveryAddress");
+                //All the locations
+                var driverLocation = driver.get("currentLocation");
+                var restaurantLocation = order.get("restaurantLocation");
+                var deliveryLocation = order.get("deliveryAddress");
 
-            var results = {
-                "driverLocation": driverLocation,
-                "restaurantLocation": restaurantLocation,
-                "deliveryLocation": deliveryLocation
-            };
+                var results = {
+                    "driverLocation": driverLocation,
+                    "restaurantLocation": restaurantLocation,
+                    "deliveryLocation": deliveryLocation
+                };
 
-            response.success(results);
+                response.success(results);
+            });
 
         }, error: function(error) {
             response.error(error);
