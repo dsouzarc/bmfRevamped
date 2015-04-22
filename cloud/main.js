@@ -1,3 +1,13 @@
+Parse.Cloud.define("updateDriverLocation", function(request, response) {
+
+    var user = Parse.User.current();
+
+    user.set("currentLocation", request.params.currentLocation);
+    user.save();
+
+    response.success("YES");
+});
+
 Parse.Cloud.define("updateOrder", function(request, response) {
 
     var orderID = request.params.orderID;
