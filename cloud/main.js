@@ -1,3 +1,69 @@
+Parse.Cloud.define("updateOrder", function(request, response) {
+
+    var orderID = request.params.orderID;
+    var updatedStatus = request.params.updatedStatus;
+
+    var query = new Parse.Query("Order");
+    query.equalTo("objectId", orderID);
+
+    query.first({
+        success: function(order) {
+
+            if(order.get("orderStatus") >= 4) {
+                response.success("Cannot update any more");
+                return;
+            }
+
+            order.set("orderStatus", updatedStatus);
+            order.save();
+
+            order.get("orderedBy").fetch().then(function(orderer) {
+                var ordererID = orderer.id;
+
+                var message = "";
+
+                switch(updatedStatus) {
+
+                    case 1:
+                        message = "Your order has been claimed";
+                        break;
+                    case 2:
+                        message = "Your order has been placed";
+                        break;
+                    case 3:
+                        message = "Your order is en route";
+                        break;
+                    case 4:
+                        message = "Your order has been delivered";
+                        break;
+                    default:
+                        message = "Error";
+                        break;
+                }
+
+                var pushQuery = new Parse.Query(Parse.Installation);
+                pushQuery.equalTo('channels', ordererID);
+
+                Parse.Push.send({
+                    where: pushQuery,
+                    data: {
+                        alert: message
+                    }
+                }, {
+                    success: function() { 
+                        response.success("YES");
+                    }, error: function(error) {
+                        response.error(error);
+                    }
+                });
+            });
+        }, error: function(error) {
+            response.error(error);
+        }
+    });
+});
+
+
 Parse.Cloud.define("getDriverLocation", function(request, response) {
 
     var orderID = request.params.orderID;
